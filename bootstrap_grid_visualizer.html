@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Guide to Bootstrap CSS Grid System</title>
+    <!-- Tailwind CSS for styling the UI layout -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter & Fira Code Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        code, pre { font-family: 'Fira Code', monospace; }
+        
+        .device-screen {
+            transition: width 0.3s ease-out;
+        }
+
+        .container-box {
+            border: 2px dashed #3b82f6;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .row-box {
+            border: 2px dashed #10b981;
+            background-color: rgba(16, 185, 129, 0.08);
+        }
+
+        .col-box {
+            border: 2px solid #8b5cf6;
+            background-color: rgba(139, 92, 246, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+
+    <!-- APP HEADER -->
+    <header class="bg-slate-800 border-b border-slate-700 px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+        <div>
+            <h1 class="text-xl font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-table-cells text-indigo-400"></i>
+                Interactive CSS Grid System Simulator
+            </h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Visualizing how <code class="bg-blue-900/60 text-blue-300 px-1 py-0.5 rounded">container</code>, 
+                <code class="bg-emerald-900/60 text-emerald-300 px-1 py-0.5 rounded">row</code>, and 
+                <code class="bg-purple-900/60 text-purple-300 px-1 py-0.5 rounded">col-md-6</code> work in real-time
+            </p>
+        </div>
+
+        <!-- DEVICE PRESETS & GRID TOGGLE -->
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center gap-1 bg-slate-900 p-1 rounded-xl border border-slate-700">
+                <button id="btn-mobile" onclick="setDevicePreset('mobile')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                    <span>Mobile (&lt;768px)</span>
+                </button>
+                <button id="btn-tablet" onclick="setDevicePreset('tablet')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-tablet-screen-button"></i>
+                    <span>Tablet (700px)</span>
+                </button>
+                <button id="btn-desktop" onclick="setDevicePreset('desktop')" class="px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-indigo-600 text-white shadow-lg">
+                    <i class="fa-solid fa-desktop"></i>
+                    <span>Desktop (&ge;768px)</span>
+                </button>
+            </div>
+
+            <label class="cursor-pointer flex items-center gap-1.5 bg-slate-800 px-3 py-2 rounded-xl border border-slate-700 text-xs text-slate-300 hover:text-white transition">
+                <input type="checkbox" id="toggle-grid" onchange="toggleGridOverlay()" checked class="accent-indigo-500 rounded">
+                Show 12-Column Overlay
+            </label>
+        </div>
+    </header>
+
+    <!-- MAIN INTERACTIVE AREA -->
+    <main class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+
+        <!-- LEFT SECTION: INTERACTIVE PREVIEW & RESIZER -->
+        <section class="flex-1 p-6 flex flex-col items-center overflow-y-auto bg-slate-950/50">
+            
+            <!-- VIEWPORT SLIDER CONTROL -->
+            <div class="w-full max-w-5xl bg-slate-800 p-3 rounded-xl border border-slate-700 mb-4 flex flex-col sm:flex-row items-center gap-4">
+                <div class="flex items-center gap-2 text-xs text-slate-300 font-semibold min-w-[160px]">
+                    <i class="fa-solid fa-sliders text-indigo-400"></i>
+                    <span>Viewport Width:</span>
+                    <span id="slider-width-val" class="text-indigo-400 font-mono font-bold text-sm">1000px</span>
+                </div>
+                <input type="range" id="width-slider" min="320" max="1000" value="1000" step="5" oninput="handleSliderChange(this.value)" class="w-full accent-indigo-500 cursor-pointer">
+                <span id="breakpoint-badge" class="px-2.5 py-1 rounded-md text-[11px] font-bold font-mono bg-emerald-900/80 text-emerald-300 border border-emerald-700/50 whitespace-nowrap">
+                    Breakpoint: ≥768px (Desktop Mode)
+                </span>
+            </div>
+
+            <!-- SIMULATED BROWSER SCREEN -->
+            <div id="device-screen" class="device-screen w-full max-w-5xl bg-slate-900 border-2 border-slate-700 rounded-2xl shadow-2xl overflow-hidden min-h-[420px] flex flex-col relative">
+                
+                <!-- Browser Title Bar -->
+                <div class="bg-slate-800 px-4 py-2 flex items-center gap-2 border-b border-slate-700">
+                    <div class="flex gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-red-500/80 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-yellow-500/80 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-green-500/80 inline-block"></span>
+                    </div>
+                    <div class="bg-slate-900 text-slate-400 text-xs px-3 py-1 rounded-md flex-1 text-center font-mono">
+                        https://your-website-example.com
+                    </div>
+                </div>
+
+                <!-- WEBPAGE CANVAS -->
+                <div class="flex-1 p-4 sm:p-8 relative overflow-hidden flex flex-col justify-center">
+
+                    <!-- 12-Column Background Grid -->
+                    <div id="grid-overlay" class="absolute inset-x-4 sm:inset-x-8 top-4 bottom-4 pointer-events-none flex gap-2">
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">1</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">2</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">3</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">4</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">5</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">6</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">7</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">8</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">9</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">10</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">11</div>
+                        <div class="flex-1 bg-indigo-500/10 border-x border-indigo-500/20 flex items-start justify-center pt-1 text-[10px] text-indigo-400 font-mono">12</div>
+                    </div>
+
+                    <!-- 1. CONTAINER (.container) -->
+                    <div class="container-box rounded-xl p-3 sm:p-5 relative transition-all duration-300 shadow-lg">
+                        <div class="absolute -top-3 left-4 bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow">
+                            &lt;div class="container"&gt; (Centers content & limits max-width)
+                        </div>
+
+                        <!-- 2. ROW (.row) -->
+                        <div class="row-box rounded-lg p-2 sm:p-4 mt-2 relative transition-all duration-300">
+                            <div class="absolute -top-3 left-4 bg-emerald-600 text-white text-[11px] font-bold px-2 py-0.5 rounded shadow">
+                                &lt;div class="row"&gt; (Horizontal wrapper for columns)
+                            </div>
+
+                            <!-- COLUMNS INSIDE THE ROW -->
+                            <div id="grid-columns-container" class="flex flex-wrap gap-y-4 gap-x-0 mt-2">
+                                
+                                <!-- COLUMN 1 (.col-md-6) -->
+                                <div id="col-1" class="w-full md:w-1/2 px-2 transition-all duration-300">
+                                    <div class="col-box rounded-lg p-4 h-full flex flex-col justify-between shadow-md group border-purple-500/60 bg-purple-950/20 hover:border-purple-400">
+                                        <div>
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="bg-purple-600 text-white font-bold text-xs px-2 py-1 rounded">
+                                                    col-md-6
+                                                </span>
+                                                <span id="col1-width-tag" class="text-[11px] text-purple-300 font-mono font-semibold">
+                                                    Width: 50% (6/12)
+                                                </span>
+                                            </div>
+                                            <h3 class="font-bold text-slate-100 text-base">Box 1 (Primary Section)</h3>
+                                            <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                                                Takes up <strong>6 out of 12 columns</strong> (50% width) on screens $\ge$ 768px.
+                                            </p>
+                                        </div>
+                                        <div class="mt-4 pt-3 border-t border-purple-500/30 text-[11px] text-purple-300 font-mono">
+                                            bg-primary p-3
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- COLUMN 2 (.col-md-6) -->
+                                <div id="col-2" class="w-full md:w-1/2 px-2 transition-all duration-300">
+                                    <div class="col-box rounded-lg p-4 h-full flex flex-col justify-between shadow-md border-emerald-500/60 bg-emerald-950/20 group hover:border-emerald-400">
+                                        <div>
+                                            <div class="flex justify-between items-center mb-2">
+                                                <span class="bg-emerald-600 text-white font-bold text-xs px-2 py-1 rounded">
+                                                    col-md-6
+                                                </span>
+                                                <span id="col2-width-tag" class="text-[11px] text-emerald-300 font-mono font-semibold">
+                                                    Width: 50% (6/12)
+                                                </span>
+                                            </div>
+                                            <h3 class="font-bold text-slate-100 text-base">Box 2 (Success Section)</h3>
+                                            <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                                                Fits beside Box 1 because <code class="text-purple-300">6 + 6 = 12</code> (total grid limit).
+                                            </p>
+                                        </div>
+                                        <div class="mt-4 pt-3 border-t border-emerald-500/30 text-[11px] text-emerald-300 font-mono">
+                                            bg-success p-3
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div> <!-- End of Row -->
+
+                        </div> <!-- End of Row Box -->
+                    </div> <!-- End of Container Box -->
+
+                </div>
+            </div>
+
+            <!-- COLOR KEY / LEGEND -->
+            <div class="w-full max-w-5xl mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div class="bg-slate-800 p-3 rounded-lg border border-blue-500/40 flex items-center gap-3">
+                    <div class="w-4 h-4 rounded bg-blue-500 border border-blue-300 flex-shrink-0"></div>
+                    <div>
+                        <div class="text-xs font-bold text-blue-400">&lt;div class="container"&gt;</div>
+                        <div class="text-[11px] text-slate-400">Outer bounding box centering the grid.</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 p-3 rounded-lg border border-emerald-500/40 flex items-center gap-3">
+                    <div class="w-4 h-4 rounded bg-emerald-500 border border-emerald-300 flex-shrink-0"></div>
+                    <div>
+                        <div class="text-xs font-bold text-emerald-400">&lt;div class="row"&gt;</div>
+                        <div class="text-[11px] text-slate-400">Horizontal row holding column items.</div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800 p-3 rounded-lg border border-purple-500/40 flex items-center gap-3">
+                    <div class="w-4 h-4 rounded bg-purple-500 border border-purple-300 flex-shrink-0"></div>
+                    <div>
+                        <div class="text-xs font-bold text-purple-400">&lt;div class="col-md-6"&gt;</div>
+                        <div class="text-[11px] text-slate-400">Column (6 of 12 units = 50% width).</div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT PANEL: CODE INSPECTOR & ANNOTATIONS -->
+        <section class="w-full lg:w-96 bg-slate-800 border-l border-slate-700 p-6 flex flex-col overflow-y-auto">
+            <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-code text-indigo-400"></i>
+                Code Inspector
+            </h2>
+
+            <!-- HTML CODE SNIPPET -->
+            <div class="mb-6">
+                <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">HTML Code Structure:</div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-700 text-xs text-slate-300 leading-relaxed font-mono overflow-x-auto shadow-inner">
+                    <span class="text-blue-400">&lt;div</span> <span class="text-yellow-300">class</span>=<span class="text-green-300">"container"</span><span class="text-blue-400">&gt;</span><br>
+                    &nbsp;&nbsp;<span class="text-blue-400">&lt;div</span> <span class="text-yellow-300">class</span>=<span class="text-green-300">"row"</span><span class="text-blue-400">&gt;</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">&lt;div</span> <span class="text-yellow-300">class</span>=<span class="text-green-300">"col-md-6 bg-primary p-3"</span><span class="text-blue-400">&gt;</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Box 1<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">&lt;/div&gt;</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">&lt;div</span> <span class="text-yellow-300">class</span>=<span class="text-green-300">"col-md-6 bg-success p-3"</span><span class="text-blue-400">&gt;</span><br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Box 2<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">&lt;/div&gt;</span><br>
+                    &nbsp;&nbsp;<span class="text-blue-400">&lt;/div&gt;</span><br>
+                    <span class="text-blue-400">&lt;/div&gt;</span>
+                </div>
+            </div>
+
+            <!-- ANNOTATION BREAKDOWN -->
+            <div class="space-y-4 text-xs">
+                <div class="border-b border-slate-700 pb-3">
+                    <h3 class="font-bold text-indigo-300 text-sm mb-1">Syntax Reference</h3>
+                    <ul class="space-y-1.5 text-slate-300">
+                        <li><code class="text-amber-400">&lt;div&gt;</code> – <strong>Divider tag:</strong> Generic container element in HTML used to group elements.</li>
+                        <li><code class="text-amber-400">class="..."</code> – <strong>Class attribute:</strong> Defines CSS class names to style the element.</li>
+                        <li><code class="text-amber-400">&lt;/div&gt;</code> – <strong>Closing tag:</strong> Signals the end of the div block.</li>
+                    </ul>
+                </div>
+
+                <!-- DETAILED CLASS EXPLANATION -->
+                <div class="space-y-3">
+                    <h3 class="font-bold text-indigo-300 text-sm mb-1">Class Breakdown</h3>
+                    
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700">
+                        <strong class="text-blue-400 block mb-1">1. container</strong>
+                        <p class="text-slate-300">Centers content horizontally and applies responsive padding so content doesn't hit the screen edges.</p>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700">
+                        <strong class="text-emerald-400 block mb-1">2. row</strong>
+                        <p class="text-slate-300">Acts as a flexbox row container that horizontally aligns child column elements.</p>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700">
+                        <strong class="text-purple-400 block mb-1">3. col - md - 6</strong>
+                        <p class="text-slate-300 mb-2">Composed of three logical parts:</p>
+                        <ul class="list-disc pl-4 space-y-1 text-slate-400">
+                            <li><strong class="text-slate-200">col</strong> = Column element</li>
+                            <li><strong class="text-slate-200">md</strong> = Medium screens breakpoint ($\ge$768px). On smaller screens, it stacks to 100%!</li>
+                            <li><strong class="text-slate-200">6</strong> = Takes 6 out of 12 available grid columns ($6/12 = 50\%$).</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-700">
+                        <strong class="text-amber-400 block mb-1">4. bg-primary, bg-success, p-3</strong>
+                        <p class="text-slate-300">
+                            <strong>bg-primary</strong>: Blue background color.<br>
+                            <strong>bg-success</strong>: Green background color.<br>
+                            <strong>p-3</strong>: Padding spacing inside the block (padding level 3).
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- INTERACTIVE SCRIPT LOGIC -->
+    <script>
+        function updateScreenDimensions(width) {
+            const screen = document.getElementById('device-screen');
+            const slider = document.getElementById('width-slider');
+            const sliderVal = document.getElementById('slider-width-val');
+            const badge = document.getElementById('breakpoint-badge');
+
+            const col1 = document.getElementById('col-1');
+            const col2 = document.getElementById('col-2');
+            const col1Tag = document.getElementById('col1-width-tag');
+            const col2Tag = document.getElementById('col2-width-tag');
+
+            // Set screen width
+            screen.style.width = width === 1000 ? '100%' : width + 'px';
+            slider.value = width;
+            sliderVal.textContent = width + 'px';
+
+            // Check breakpoint logic (>= 768px vs < 768px)
+            if (width >= 768) {
+                badge.className = "px-2.5 py-1 rounded-md text-[11px] font-bold font-mono bg-emerald-900/80 text-emerald-300 border border-emerald-700/50 whitespace-nowrap";
+                badge.textContent = "Breakpoint: ≥768px (Desktop Side-by-Side)";
+
+                col1.className = "w-1/2 px-2 transition-all duration-300";
+                col2.className = "w-1/2 px-2 transition-all duration-300";
+
+                col1Tag.textContent = "Width: 50% (6/12)";
+                col2Tag.textContent = "Width: 50% (6/12)";
+            } else {
+                badge.className = "px-2.5 py-1 rounded-md text-[11px] font-bold font-mono bg-amber-900/80 text-amber-300 border border-amber-700/50 whitespace-nowrap";
+                badge.textContent = "Breakpoint: <768px (Mobile Stacked Mode)";
+
+                col1.className = "w-full px-2 transition-all duration-300";
+                col2.className = "w-full px-2 transition-all duration-300";
+
+                col1Tag.textContent = "Width: 100% (Stacked)";
+                col2Tag.textContent = "Width: 100% (Stacked)";
+            }
+        }
+
+        function handleSliderChange(val) {
+            updateScreenDimensions(parseInt(val));
+            updatePresetButtons(null);
+        }
+
+        function setDevicePreset(preset) {
+            const btnMobile = document.getElementById('btn-mobile');
+            const btnTablet = document.getElementById('btn-tablet');
+            const btnDesktop = document.getElementById('btn-desktop');
+
+            let targetWidth = 1000;
+            if (preset === 'mobile') targetWidth = 420;
+            if (preset === 'tablet') targetWidth = 700;
+            if (preset === 'desktop') targetWidth = 1000;
+
+            updateScreenDimensions(targetWidth);
+            updatePresetButtons(preset);
+        }
+
+        function updatePresetButtons(activePreset) {
+            const btnMobile = document.getElementById('btn-mobile');
+            const btnTablet = document.getElementById('btn-tablet');
+            const btnDesktop = document.getElementById('btn-desktop');
+
+            const inactiveClass = "px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 text-slate-400 hover:text-white";
+            const activeClass = "px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 bg-indigo-600 text-white shadow-lg";
+
+            btnMobile.className = activePreset === 'mobile' ? activeClass : inactiveClass;
+            btnTablet.className = activePreset === 'tablet' ? activeClass : inactiveClass;
+            btnDesktop.className = activePreset === 'desktop' ? activeClass : inactiveClass;
+        }
+
+        function toggleGridOverlay() {
+            const checkbox = document.getElementById('toggle-grid');
+            const overlay = document.getElementById('grid-overlay');
+            overlay.style.opacity = checkbox.checked ? '1' : '0';
+        }
+    </script>
+</body>
+</html>
